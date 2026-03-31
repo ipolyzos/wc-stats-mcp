@@ -144,12 +144,7 @@ func (s *Server) handleToolsCall(ctx context.Context, req Request) *Response {
 
 	out, err := s.Reg.Call(ctx, p.Name, p.Arguments)
 	if err != nil {
-		details, _ := json.Marshal(map[string]string{"tool": p.Name, "reason": err.Error()})
-		return &Response{
-			JSONRPC: jsonRPCVersion,
-			ID:      req.ID,
-			Error:   &ErrorEnvelope{Code: CodeToolError, Message: "tool execution failed", Details: details},
-		}
+		return &Response{JSONRPC: jsonRPCVersion, ID: req.ID, Error: ToolExecutionFailed(p.Name, err)}
 	}
 
 	// MCP-shaped result; structuredContent carries the tool JSON.

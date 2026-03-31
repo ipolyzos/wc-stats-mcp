@@ -154,3 +154,32 @@ func TestResolveUnderRoot_symlinkToDir_rejected(t *testing.T) {
 		t.Fatalf("got %v", err)
 	}
 }
+
+func TestLimits_WithRequestMaxBytes(t *testing.T) {
+	t.Run("tightensBelowDefault", func(t *testing.T) {
+		out := Limits{}.WithRequestMaxBytes(500)
+		if out.MaxFileBytes != 500 {
+			t.Fatalf("MaxFileBytes=%d", out.MaxFileBytes)
+		}
+	})
+	t.Run("cannotExceedDefault", func(t *testing.T) {
+		out := Limits{}.WithRequestMaxBytes(DefaultMaxFileBytes + 1)
+		if out.MaxFileBytes != 0 {
+			t.Fatalf("expected unchanged zero MaxFileBytes, got %d", out.MaxFileBytes)
+		}
+	})
+	t.Run("tightensExplicitServerCap", func(t *testing.T) {
+		base := Limits{MaxFileBytes: 5000}
+		out := base.WithRequestMaxBytes(1000)
+		if out.MaxFileBytes != 1000 {
+			t.Fatalf("got %d", out.MaxFileBytes)
+		}
+	})
+	t.Run("cannotExceedExplicitServerCap", func(t *testing.T) {
+		base := Limits{MaxFileBytes: 1000}
+		out := base.WithRequestMaxBytes(5000)
+		if out.MaxFileBytes != 1000 {
+			t.Fatalf("got %d", out.MaxFileBytes)
+		}
+	})
+}

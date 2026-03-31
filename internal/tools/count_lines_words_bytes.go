@@ -14,8 +14,9 @@ import (
 
 // CountLinesWordsBytesArgs is the JSON shape for tools/call arguments.
 type CountLinesWordsBytesArgs struct {
-	Path string `json:"path"`
-	Root string `json:"root,omitempty"`
+	Path     string `json:"path"`
+	Root     string `json:"root,omitempty"`
+	MaxBytes int64  `json:"max_bytes"`
 }
 
 // CountLinesWordsBytesHandler runs wc -l -w -c on a path validated under root.
@@ -47,7 +48,8 @@ func CountLinesWordsBytesHandler(r *exec.Runner, lim validate.Limits) Handler {
 			root = cwd
 		}
 
-		resolved, _, err := validate.ResolveUnderRoot(root, args.Path, lim)
+		reqLim := lim.WithRequestMaxBytes(args.MaxBytes)
+		resolved, _, err := validate.ResolveUnderRoot(root, args.Path, reqLim)
 		if err != nil {
 			return nil, fmt.Errorf("validate: %w", err)
 		}

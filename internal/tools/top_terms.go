@@ -27,6 +27,7 @@ const (
 type TopTermsArgs struct {
 	Path          string `json:"path"`
 	Root          string `json:"root,omitempty"`
+	MaxBytes      int64  `json:"max_bytes"`
 	TopN          int    `json:"top_n"`
 	MinLen        int    `json:"min_len"`
 	CaseSensitive bool   `json:"case_sensitive"`
@@ -83,7 +84,8 @@ func TopTermsHandler(vlim validate.Limits) Handler {
 			maxLines = topTermsHardMaxLines
 		}
 
-		resolved, _, err := validate.ResolveUnderRoot(root, args.Path, vlim)
+		reqLim := vlim.WithRequestMaxBytes(args.MaxBytes)
+		resolved, _, err := validate.ResolveUnderRoot(root, args.Path, reqLim)
 		if err != nil {
 			return nil, fmt.Errorf("validate: %w", err)
 		}
