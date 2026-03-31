@@ -9,7 +9,7 @@ import (
 	"io"
 	"log"
 
-	"github.com/ipolyzos/wc-stats-mcp/internal/tools"
+	"wc-stats-mcp/internal/tools"
 )
 
 // Server handles JSON-RPC lines on stdio: responses only on out; logs on logOut.
