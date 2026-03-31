@@ -1,0 +1,7 @@
+# https://github.com/lycheeverse/lychee
+# GitHub Actions / Security tab URLs often return 404 to unauthenticated checks
+# (and workflow badges before the default branch has workflows).
+exclude = [
+  '^https://github\.com/ipolyzos/wc-stats-mcp/actions/',
+  '^https://github\.com/ipolyzos/wc-stats-mcp/security/?$',
+]
