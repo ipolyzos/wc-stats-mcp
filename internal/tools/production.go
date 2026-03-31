@@ -8,6 +8,7 @@ import (
 // ProductionToolNames is the sorted tool names RegisterProduction adds. Keep in sync with RegisterProduction.
 var ProductionToolNames = []string{
 	"count_lines_words_bytes",
+	"field_frequency",
 	"server.ping",
 	"top_terms",
 	"unique_values",
@@ -25,4 +26,5 @@ func RegisterProduction(reg *Registry, r *exec.Runner, lim validate.Limits) {
 	reg.Register("count_lines_words_bytes", CountLinesWordsBytesHandler(r, lim))
 	reg.Register("top_terms", TopTermsHandler(lim))
 	reg.Register("unique_values", UniqueValuesHandler(lim))
+	reg.Register("field_frequency", FieldFrequencyHandler(lim))
 }

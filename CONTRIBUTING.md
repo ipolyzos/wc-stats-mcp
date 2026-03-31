@@ -7,6 +7,8 @@
 
 Do not push directly to `main` or `develop`.
 
+Release tagging and GitHub Release binaries: [docs/releases.md](docs/releases.md).
+
 ## Pull requests
 
 - **PR-only merges** into `develop` (and `develop` → `main` for releases).
