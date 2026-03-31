@@ -32,6 +32,7 @@ func main() {
 	reg := tools.NewRegistry()
 	reg.Register("server.ping", tools.PingHandler)
 	reg.Register("count_lines_words_bytes", tools.CountLinesWordsBytesHandler(runner, lim))
+	reg.Register("top_terms", tools.TopTermsHandler(lim))
 
 	srv := &mcp.Server{
 		Reg: reg,
