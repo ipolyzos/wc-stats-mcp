@@ -48,6 +48,8 @@ The server is intended to speak MCP over stdio; exact invocation will match the 
 
 Path validation and related security rules are documented in [security.md](security.md).
 
+High-level design (stdio MCP, pure-Go scanning vs subprocesses) is in [architecture.md](architecture.md).
+
 ## Contributing workflow
 
 See [CONTRIBUTING.md](../CONTRIBUTING.md): PRs target **`develop`**, releases come from **`main`** via PR.
