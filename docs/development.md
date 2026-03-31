@@ -46,6 +46,8 @@ After a successful build:
 
 The server is intended to speak MCP over stdio; exact invocation will match the implementation in `README.md` as it lands.
 
+Path validation and related security rules are documented in [security.md](security.md).
+
 ## Contributing workflow
 
 See [CONTRIBUTING.md](../CONTRIBUTING.md): PRs target **`develop`**, releases come from **`main`** via PR.

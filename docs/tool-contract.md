@@ -76,6 +76,18 @@ Example:
 |------|--------|
 | `server.ping` | `{"ok": true}` (inside `structuredContent`) |
 
+## File path validation (read-only tools)
+
+Tools that open paths on behalf of the user must treat paths as **untrusted** and validate them against a **server-configured root directory** using `internal/validate`:
+
+- **Relative paths only** — absolute `userPath` values are rejected.
+- **No `..` elements** in the user-provided path string.
+- **Root containment** after `Join`/`Clean`, then again after **symlink resolution** (`filepath.EvalSymlinks`). Targets that resolve outside the real root are rejected.
+- **Regular files only** (not directories or special files).
+- **Default max file size: 25 MiB** per resolved file unless overridden via `validate.Limits.MaxFileBytes`.
+
+Stable errors: `ErrInvalidInput`, `ErrAbsolutePath`, `ErrDotDot`, `ErrTraversal`, `ErrNotExist`, `ErrNotRegular`, `ErrFileTooLarge`, `ErrSymlink`. See [security.md](security.md) for the full policy table.
+
 ## Limits
 
 - Scanner buffer per line: **4 MiB** (oversized lines error at read time).

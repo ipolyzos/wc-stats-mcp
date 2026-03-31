@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ipolyzos/wc-stats-mcp/internal/tools"
+	"wc-stats-mcp/internal/tools"
 )
 
 func TestServeStdio_toolsCall_ping(t *testing.T) {
