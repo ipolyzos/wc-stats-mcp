@@ -36,36 +36,36 @@ Runs **`wc -l -w -c`** on a file after **path validation** (`internal/validate`)
 {"jsonrpc":"2.0","id":1,"result":{"structuredContent":{"path":"/srv/project/data/sample.txt","lines":2,"words":4,"bytes":28}}}
 ```
 
-### `unique_values`
+### `top_terms`
 
-Streams a validated text file line-by-line (`internal/textscan`), splits each line with **`strings.Split(line, delimiter)`** (default delimiter **`,`**, max **3 bytes**). **Not CSV-aware:** no quoted fields, no escape rules—delimiters inside “fields” will split incorrectly.
+Pure-Go streaming tokenizer over a validated file (`internal/validate` + `internal/textscan`). Tokens are Unicode **letters and numbers** only (see `textscan.ForEachNonLetterDigitToken`). Shorter tokens than `min_len` runes are skipped. Results are sorted by **count descending**, then **term ascending** (UTF-8 byte order).
 
-| Argument | Default | Notes |
+| Argument | Default | Limits |
 |----------|---------|--------|
-| `path` | required | Relative under `root`. |
-| `root` | `cwd` | — |
-| `delimiter` | `,` | Max length 3 (bytes). |
-| `field_index` | required | **0-based** column; max **1000**. |
-| `trim_space` | `true` | `strings.TrimSpace` on the field. |
-| `max_unique` | `1000` | Hard max **10_000**; scanning stops once this many **distinct** values were seen (in file order). |
-| `max_lines` | `1_000_000` | Hard max **1_000_000**. |
-
-Rows with **too few fields** (missing `field_index`) are **skipped**. Returned `values` are sorted by **`sort.Strings`**: lexicographic order of UTF-8 byte sequences (Go’s `<` on strings).
+| `path` | (required) | Relative under `root`. |
+| `root` | process `cwd` | — |
+| `top_n` | `20` | max `100` |
+| `min_len` | `3` | max `30` (Unicode runes per token) |
+| `case_sensitive` | `false` | If `false`, fold with `bytes.ToLower` on each line before tokenizing. |
+| `max_lines` | `1_000_000` | Hard max `1_000_000` lines scanned. |
 
 **Structured result:**
 
 ```json
 {
-  "path": "/resolved/file.csv",
-  "field_index": 1,
-  "values": ["admin", "guest", "user"]
+  "path": "/absolute/resolved/file.txt",
+  "top_n": 3,
+  "terms": [
+    { "term": "apple", "count": 3 },
+    { "term": "banana", "count": 2 }
+  ]
 }
 ```
 
-**Example `tools/call`:**
+**Example `tools/call` (one NDJSON line):**
 
 ```json
-{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"unique_values","arguments":{"path":"data/rows.txt","root":"/srv/app","field_index":2,"delimiter":"|","max_unique":500}}}
+{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"top_terms","arguments":{"path":"notes/sample.txt","root":"/data/repo","top_n":5,"min_len":3,"case_sensitive":false}}}
 ```
 
 ### `server.ping`
@@ -76,7 +76,7 @@ Health check; returns `{"ok": true}` inside `structuredContent`.
 
 | Tool | Purpose (planned) |
 |------|-------------------|
-| `top_terms` | Token frequency: tokenize in Go, then `sort` → `uniq -c` → `sort -nr`. |
+| `unique_values` | Delimited field extraction and unique values (deterministic sort optional). |
 | `field_frequency` | Per-field value counts via sort / uniq pipeline. |
 
 ## Protocol & security

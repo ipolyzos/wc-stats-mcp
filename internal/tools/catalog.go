@@ -23,10 +23,10 @@ func ToolMeta(name string) (description string, schema map[string]any) {
 				},
 			},
 		}
-	case "unique_values":
-		return "Collect unique values from a fixed field in each line (naive delimiter split; not CSV-safe).", map[string]any{
+	case "top_terms":
+		return "Stream token frequencies from a text file (Unicode letter/digit tokens) with line and size caps.", map[string]any{
 			"type":     "object",
-			"required": []string{"path", "field_index"},
+			"required": []string{"path"},
 			"properties": map[string]any{
 				"path": map[string]any{
 					"type":        "string",
@@ -36,25 +36,21 @@ func ToolMeta(name string) (description string, schema map[string]any) {
 					"type":        "string",
 					"description": "Sandbox root; defaults to cwd.",
 				},
-				"delimiter": map[string]any{
-					"type":        "string",
-					"description": "Field separator; default comma; max 3 bytes. No quoting rules.",
-				},
-				"field_index": map[string]any{
+				"top_n": map[string]any{
 					"type":        "integer",
-					"description": "0-based column index; max 1000.",
+					"description": "Max terms to return; default 20, max 100.",
 				},
-				"trim_space": map[string]any{
+				"min_len": map[string]any{
+					"type":        "integer",
+					"description": "Minimum token length in Unicode runes; default 3, max 30.",
+				},
+				"case_sensitive": map[string]any{
 					"type":        "boolean",
-					"description": "Trim ASCII space around field; default true.",
-				},
-				"max_unique": map[string]any{
-					"type":        "integer",
-					"description": "Stop after this many distinct values (scan order); default 1000; hard max 10000.",
+					"description": "If false (default), fold case with Unicode lowercasing before counting.",
 				},
 				"max_lines": map[string]any{
 					"type":        "integer",
-					"description": "Max lines to read; default 1_000_000; hard max 1_000_000.",
+					"description": "Max lines to scan; default 1_000_000; hard-capped at 1_000_000.",
 				},
 			},
 		}

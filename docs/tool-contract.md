@@ -76,44 +76,39 @@ Example:
 |------|--------|
 | `server.ping` | `{"ok": true}` (inside `structuredContent`) |
 
-## Tool: `unique_values`
+## Tool: `top_terms`
 
-Streams lines from a UTF-8 text file and collects **distinct** values from a fixed **0-based** column.
-
-**Splitting:** `strings.Split` on the delimiter string (default **`,`**, max **3 bytes**). This is **not** RFC 4180 CSV: commas inside quotes are **not** protected unless we add an explicit CSV mode later.
-
-**Rows:** If a line has fewer than `field_index+1` fields, the line is **ignored** (no placeholder value).
-
-**Sorting:** `values` are ordered with **`sort.Strings`**: bytewise lexicographic order of the UTF-8 encoding (same as Go `string` comparison).
-
-**Caps:** `max_unique` defaults to **1000**, hard-capped at **10_000**; once that many distinct values exist, scanning stops successfully. `max_lines` defaults to **1_000_000** (hard cap). Per-line cap remains **4 MiB** (`textscan`).
+Counts token frequencies in a UTF-8 text file using **pure Go** streaming (`internal/textscan`).
 
 **Arguments:**
 
 | Field | Type | Default | Notes |
 |-------|------|---------|--------|
 | `path` | string | required | Relative to `root`. |
-| `root` | string | cwd | |
-| `delimiter` | string | `,` | Max 3 bytes. |
-| `field_index` | integer | required | 0 … 1000. |
-| `trim_space` | boolean | `true` | `strings.TrimSpace` on the field. |
-| `max_unique` | integer | 1000 | Hard max 10_000. |
-| `max_lines` | integer | 1_000_000 | Hard max 1_000_000. |
+| `root` | string | server `cwd` | Sandbox directory (`validate.ResolveUnderRoot`). |
+| `top_n` | integer | `20` | Maximum `100`. |
+| `min_len` | integer | `3` | Minimum token length in **Unicode runes**; maximum `30`. |
+| `case_sensitive` | boolean | `false` | When `false`, each line is lowercased (`bytes.ToLower`) before tokenization. |
+| `max_lines` | integer | `1_000_000` | Hard-capped at `1_000_000`; per-line cap remains **4 MiB** (`textscan.DefaultMaxLineBytes`). |
 
-**`structuredContent`:**
+**Token rule:** maximal substrings of Unicode letters or numbers (`unicode.IsLetter` / `unicode.IsNumber`); all other runes delimit tokens.
+
+**`structuredContent` shape:**
 
 ```json
 {
   "path": "/resolved/path.txt",
-  "field_index": 1,
-  "values": ["east", "north", "south"]
+  "top_n": 5,
+  "terms": [{ "term": "example", "count": 12 }]
 }
 ```
+
+Sorting: **count descending**, then **term ascending** (lexicographic UTF-8 byte order).
 
 **Example `tools/call`:**
 
 ```json
-{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"unique_values","arguments":{"path":"data.tsv","field_index":0,"delimiter":"\t"}}}
+{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"top_terms","arguments":{"path":"data.txt","top_n":10,"min_len":3}}}
 ```
 
 ## File path validation (read-only tools)
@@ -130,8 +125,7 @@ Stable errors: `ErrInvalidInput`, `ErrAbsolutePath`, `ErrDotDot`, `ErrTraversal`
 
 ## Limits
 
-- JSON-RPC inbound line buffer: **4 MiB**.
-- File line buffer (`textscan`): **4 MiB** per line.
-- `unique_values`: `max_lines` default/hard **1_000_000**; `max_unique` default **1000**, hard **10_000**.
+- JSON-RPC line buffer: **4 MiB** per inbound message.
+- `top_terms` line buffer: **4 MiB** per file line (`textscan`); line count capped by `max_lines` (default / hard max **1_000_000**).
 
 Full product limits (text size, subprocess caps) will be documented alongside future tools.
