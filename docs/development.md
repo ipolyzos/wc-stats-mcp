@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- **Go** 1.22+ (`go version`).
+- **Go** 1.23+ (`go version`; CI uses **1.23.12** via `go.mod` `toolchain`).
 
 ## Clone and branch
 
