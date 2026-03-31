@@ -68,6 +68,48 @@ Pure-Go streaming tokenizer over a validated file (`internal/validate` + `intern
 {"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"top_terms","arguments":{"path":"notes/sample.txt","root":"/data/repo","top_n":5,"min_len":3,"case_sensitive":false}}}
 ```
 
+### `unique_values`
+
+Streams UTF-8 lines from a validated file, splits each line on a **delimiter** (`strings.Split`; **not CSV-safe** — no quoting or escapes), takes the **0-based** field, optionally trims ASCII spaces, and returns **sorted distinct** values. Rows with fewer fields than `field_index` are skipped.
+
+| Argument | Default | Limits |
+|----------|---------|--------|
+| `path` | (required) | Relative under `root`. |
+| `field_index` | (required) | `0` … `1000`. |
+| `root` | process `cwd` | — |
+| `delimiter` | `,` | Max **3** bytes. |
+| `trim_space` | `true` | — |
+| `max_unique` | `1000` | Hard max `10_000` distinct values (scan may stop early). |
+| `max_lines` | `1_000_000` | Hard max `1_000_000`. |
+
+**Structured result:** `{ "path", "field_index", "values": [ "…" ] }` (values sorted ascending, UTF-8 byte order).
+
+### `field_frequency`
+
+Same line / delimiter / field rules as `unique_values`. Counts how often each field value appears, then returns the **top N** rows sorted by **count descending**, then **value ascending** (UTF-8 byte order). Empty values after trim are **skipped** unless `include_empty` is `true`.
+
+| Argument | Default | Limits |
+|----------|---------|--------|
+| `path` | (required) | Relative under `root`. |
+| `field_index` | (required) | `0` … `1000`. |
+| `root` | process `cwd` | — |
+| `delimiter` | `,` | Max **3** bytes. |
+| `trim_space` | `true` | — |
+| `max_lines` | `1_000_000` | Hard max `1_000_000`. |
+| `top_n` | `20` | Max `100`. |
+| `include_empty` | `false` | — |
+
+**Structured result:**
+
+```json
+{
+  "path": "/absolute/resolved/data.txt",
+  "field_index": 1,
+  "top_n": 20,
+  "frequencies": [{ "value": "a", "count": 3 }, { "value": "b", "count": 2 }]
+}
+```
+
 ### `server.ping`
 
 Health check; returns `{"ok": true}` inside `structuredContent`.
@@ -76,8 +118,7 @@ Health check; returns `{"ok": true}` inside `structuredContent`.
 
 | Tool | Purpose (planned) |
 |------|-------------------|
-| `unique_values` | Delimited field extraction and unique values (deterministic sort optional). |
-| `field_frequency` | Per-field value counts via sort / uniq pipeline. |
+| — | *(none yet)* |
 
 ## Protocol & security
 
