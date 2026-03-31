@@ -69,6 +69,7 @@ Paris paris PARIS! café 123
   "path": "tweet.txt",
   "root": "/data/proj",
   "top_n": 10,
+  "offset": 0,
   "min_len": 2,
   "case_sensitive": false,
   "max_lines": 1000
@@ -83,6 +84,9 @@ With **`case_sensitive: false`**, the line is lowercased before tokenizing, so *
 {
   "path": "/data/proj/tweet.txt",
   "top_n": 10,
+  "offset": 0,
+  "total_unique": 3,
+  "has_more": false,
   "terms": [
     { "term": "paris", "count": 3 },
     { "term": "123", "count": 1 },
@@ -96,6 +100,10 @@ With **`case_sensitive: false`**, the line is lowercased before tokenizing, so *
 ### Edge: short tokens skipped
 
 `min_len: 5` may drop **`123`** (3 runes) and short tokens.
+
+### Edge: pagination
+
+Use `offset` with `top_n` to page through sorted terms. Example: `top_n: 100, offset: 0` then call again with `offset: next_offset` when `has_more` is `true`.
 
 ---
 

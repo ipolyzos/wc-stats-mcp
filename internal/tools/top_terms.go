@@ -29,6 +29,7 @@ type TopTermsArgs struct {
 	Root          string `json:"root,omitempty"`
 	MaxBytes      int64  `json:"max_bytes"`
 	TopN          int    `json:"top_n"`
+	Offset        int    `json:"offset"`
 	MinLen        int    `json:"min_len"`
 	CaseSensitive bool   `json:"case_sensitive"`
 	MaxLines      int    `json:"max_lines"`
@@ -66,6 +67,9 @@ func TopTermsHandler(vlim validate.Limits) Handler {
 		}
 		if topN > topTermsMaxTopN {
 			return nil, fmt.Errorf("top_n must be at most %d", topTermsMaxTopN)
+		}
+		if args.Offset < 0 {
+			return nil, fmt.Errorf("offset must be non-negative")
 		}
 
 		minLen := args.MinLen
@@ -128,18 +132,36 @@ func TopTermsHandler(vlim validate.Limits) Handler {
 			}
 			return pairs[i].Term < pairs[j].Term
 		})
-		if len(pairs) > topN {
-			pairs = pairs[:topN]
+		totalUnique := len(pairs)
+		start := args.Offset
+		if start > totalUnique {
+			start = totalUnique
 		}
+		end := start + topN
+		if end > totalUnique {
+			end = totalUnique
+		}
+		page := pairs[start:end]
+		hasMore := end < totalUnique
 
 		out := struct {
-			Path  string      `json:"path"`
-			TopN  int         `json:"top_n"`
-			Terms []termCount `json:"terms"`
+			Path        string      `json:"path"`
+			TopN        int         `json:"top_n"`
+			Offset      int         `json:"offset"`
+			TotalUnique int         `json:"total_unique"`
+			HasMore     bool        `json:"has_more"`
+			NextOffset  int         `json:"next_offset,omitempty"`
+			Terms       []termCount `json:"terms"`
 		}{
-			Path:  resolved,
-			TopN:  topN,
-			Terms: pairs,
+			Path:        resolved,
+			TopN:        topN,
+			Offset:      start,
+			TotalUnique: totalUnique,
+			HasMore:     hasMore,
+			Terms:       page,
+		}
+		if hasMore {
+			out.NextOffset = end
 		}
 		return json.Marshal(out)
 	}
