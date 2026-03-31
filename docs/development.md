@@ -54,6 +54,7 @@ High-level design (stdio MCP, pure-Go scanning vs subprocesses) is in [architect
 
 See [CONTRIBUTING.md](../CONTRIBUTING.md): PRs target **`develop`**, releases come from **`main`** via PR.
 
-## Troubleshooting
+## Examples and troubleshooting
 
-See [troubleshooting.md](troubleshooting.md) for common errors (`validate:`, `wc`, path rules, scan limits).
+- [examples.md](examples.md) — sample files, arguments, and edge cases.
+- [troubleshooting.md](troubleshooting.md) — `validate:`, `wc`, path rules, scan limits, encoding.
