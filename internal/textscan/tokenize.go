@@ -5,9 +5,16 @@ import (
 	"unicode/utf8"
 )
 
-// ForEachNonLetterDigitToken walks UTF-8 text and emits maximal runs of runes where
-// unicode.IsLetter(r) || unicode.IsNumber(r). Any other rune splits tokens; invalid UTF-8
-// bytes are treated as delimiters. Tokens are allocated copies (not sub-slices of line).
+// ForEachNonLetterDigitToken splits line into tokens and invokes fn for each.
+//
+// Rule (deterministic, UTF-8):
+//   - Walk the line as UTF-8 runes. Replacement: invalid UTF-8 is consumed one byte at a time and treated as a delimiter (token boundary).
+//   - A token is a maximal contiguous subsequence of runes r where
+//     unicode.IsLetter(r) || unicode.IsNumber(r) (Unicode letter or number categories).
+//   - Any other rune (whitespace, punctuation, symbols, underscore, etc.) ends the current token and is skipped.
+//   - Empty tokens are not emitted.
+//
+// Tokens are emitted as newly allocated UTF-8 byte slices (not sub-slices of line).
 func ForEachNonLetterDigitToken(line []byte, fn func(token []byte) error) error {
 	var cur []byte
 	flush := func() error {
@@ -43,7 +50,9 @@ func ForEachNonLetterDigitToken(line []byte, fn func(token []byte) error) error 
 	return flush()
 }
 
-// ForEachNonLetterDigitTokenNormalized applies Normalize(line, caseSensitive) before tokenization.
+// ForEachNonLetterDigitTokenNormalized applies Normalize(line, caseSensitive) before tokenization
+// so case folding uses bytes.ToLower on the whole line (UTF-8 aware per Go).
 func ForEachNonLetterDigitTokenNormalized(line []byte, caseSensitive bool, fn func(token []byte) error) error {
-	return ForEachNonLetterDigitToken(Normalize(line, caseSensitive), fn)
+	norm := Normalize(line, caseSensitive)
+	return ForEachNonLetterDigitToken(norm, fn)
 }
