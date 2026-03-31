@@ -1,5 +1,8 @@
 # wc-stats-mcp (WIP)
 
+[![CI](https://github.com/ipolyzos/wc-stats-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/ipolyzos/wc-stats-mcp/actions/workflows/ci.yml)
+[![Docs](https://github.com/ipolyzos/wc-stats-mcp/actions/workflows/docs.yml/badge.svg)](https://github.com/ipolyzos/wc-stats-mcp/actions/workflows/docs.yml)
+
 **Work in progress:** a **read-only** [Model Context Protocol](https://modelcontextprotocol.io/) server over **stdio** for text statistics (wrapping coreutils such as `wc`, `sort`, `uniq`, and optionally `cut`), with strict limits and deterministic locale where subprocesses are used.
 
 ## Implemented MCP tools
