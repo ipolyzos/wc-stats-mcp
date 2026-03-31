@@ -2,17 +2,17 @@
 
 ## Threat model (scope)
 
-**In scope**
+### In scope
 
 - **Caller-controlled input:** JSON-RPC payloads (`path`, `root`, numeric limits, tool names) and file contents read through validated paths.
 - **Process boundary:** MCP host spawns `wc-stats-mcp`; compromise of the **host** or **OS user** is outside this document.
 
-**Out of scope**
+### Out of scope
 
 - Secrecy of file contents once legitimately opened (server reads files as the host user).
 - Network transport (stdio only; no TLS here).
 
-**Design goals**
+### Design goals
 
 1. **No shell injection** — never pass user strings to `/bin/sh -c`.
 2. **Filesystem sandbox** — only read files proven to live under **`root`** after symlink resolution.
@@ -52,7 +52,7 @@ The **`root`** default is the server process **cwd** — the MCP host chooses cw
 
 ## Subprocess policy
 
-- **Allowed:** **`wc`** with fixed flags **` -l -w -c`** and a **single absolute path** produced by validation.
+- **Allowed:** **`wc`** with fixed flags **`-l -w -c`** and a **single absolute path** produced by validation.
 - **Mechanism:** **`exec.CommandContext`** + explicit argv slice; **stdin** not wired to user data.
 - **Timeout:** bounded context (**default 2 s**).
 - **Output:** stdout/stderr copied to capped buffers; overflow → categorized error, not unbounded growth.

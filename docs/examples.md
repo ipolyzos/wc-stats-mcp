@@ -44,7 +44,7 @@ second line
 }
 ```
 
-**Edge: stricter cap**
+### Edge: stricter cap
 
 ```json
 { "path": "notes.txt", "root": "/data/proj", "max_bytes": 10 }
@@ -93,7 +93,7 @@ With **`case_sensitive: false`**, the line is lowercased before tokenizing, so *
 
 (Exact token list depends on UTF-8 input; numeric vs letter grouping follows `unicode.IsLetter` / `IsNumber`.)
 
-**Edge: short tokens skipped**
+### Edge: short tokens skipped
 
 `min_len: 5` may drop **`123`** (3 runes) and short tokens.
 
@@ -133,11 +133,11 @@ With **`case_sensitive: false`**, the line is lowercased before tokenizing, so *
 }
 ```
 
-**Edge: short rows**
+### Edge: short rows
 
 Line `only-two` with **`field_index: 2`** → row skipped (not enough fields).
 
-**Edge: quoted CSV**
+### Edge: quoted CSV
 
 ```text
 1,"Smith, Jr.",east
@@ -145,7 +145,7 @@ Line `only-two` with **`field_index: 2`** → row skipped (not enough fields).
 
 **Not** supported — delimiter split breaks inside quotes. Pre-normalize or use a real CSV tool upstream.
 
-**Edge: `max_unique`**
+### Edge: `max_unique`
 
 With thousands of new distinct values, scanning stops after **`max_unique`** (default 1000, hard max 10_000); `values` may be incomplete but sorted among collected set.
 
@@ -192,7 +192,7 @@ u1,200
 }
 ```
 
-**Edge: empty field**
+### Edge: empty field
 
 File:
 
@@ -206,7 +206,7 @@ Field index **1**: line 1 has empty second field.
 - **`include_empty: false`** (default): empty values not counted → only **`y`** appears.
 - **`include_empty: true`**: `""` counted; ties sort with **empty string first** in UTF-8 order before **`y`**.
 
-**Edge: memory**
+### Edge: memory
 
 Very high **cardinality** fields keep all keys in a map until sort — monitor heap for huge logs.
 
