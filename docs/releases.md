@@ -39,7 +39,7 @@ git push origin vX.Y.Z
 
 Use **Semantic Versioning** (`MAJOR.MINOR.PATCH`), tag name **`v` + version** (examples: `v0.1.0`, `v1.2.3`).
 
-Pushing the tag runs [`.github/workflows/release.yml`](../.github/workflows/release.yml) (when present), which:
+Pushing the tag runs [`.github/workflows/release.yml`](../.github/workflows/release.yml), which:
 
 - cross-compiles **`wc-stats-mcp`** for **Linux** and **macOS**, **amd64** and **arm64**;
 - packages each binary as a **`.tar.gz`**;
