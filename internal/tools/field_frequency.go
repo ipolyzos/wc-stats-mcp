@@ -22,6 +22,7 @@ const (
 type FieldFrequencyArgs struct {
 	Path         string `json:"path"`
 	Root         string `json:"root,omitempty"`
+	MaxBytes     int64  `json:"max_bytes"`
 	Delimiter    string `json:"delimiter"`
 	FieldIndex   *int   `json:"field_index"`
 	TrimSpace    *bool  `json:"trim_space"`
@@ -97,7 +98,8 @@ func FieldFrequencyHandler(vlim validate.Limits) Handler {
 			maxLines = uvHardMaxLines
 		}
 
-		resolved, _, err := validate.ResolveUnderRoot(root, args.Path, vlim)
+		reqLim := vlim.WithRequestMaxBytes(args.MaxBytes)
+		resolved, _, err := validate.ResolveUnderRoot(root, args.Path, reqLim)
 		if err != nil {
 			return nil, fmt.Errorf("validate: %w", err)
 		}

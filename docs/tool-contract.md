@@ -119,6 +119,7 @@ Tools that read files share the following **argument** names and semantics (see 
 |------|----------------|
 | `top_terms` | **Count descending**, then **term ascending** (UTF-8 byte order). |
 | `unique_values` | Distinct values **ascending** (UTF-8 byte order). |
+| `field_frequency` | **Count descending**, then **value ascending** (UTF-8 byte order); truncated to `top_n`. |
 | `server.ping` | N/A |
 | `count_lines_words_bytes` | N/A (scalar counts) |
 
@@ -183,6 +184,7 @@ Streams delimited lines from a UTF-8 file (`internal/textscan` + `internal/valid
 | `path` | string | required | Relative to `root`. |
 | `field_index` | integer | required | 0-based; maximum `1000`. |
 | `root` | string | server `cwd` | Sandbox directory. |
+| `max_bytes` | integer | (omit) | Optional stricter file size cap; see shared conventions. |
 | `delimiter` | string | `,` | Maximum **3** bytes. |
 | `trim_space` | boolean | `true` | Trim ASCII spaces around the extracted field. |
 | `max_unique` | integer | `1000` | Stop after this many distinct values; hard max `10_000`. |
@@ -204,12 +206,14 @@ Sorting: distinct `values` are **ascending** lexicographic UTF-8 byte order.
 
 Same streaming, path validation, delimiter, and field-index semantics as `unique_values`. Counts occurrences of each field value (after optional trim). Empty strings are **omitted** from counts unless `include_empty` is `true`.
 
-**Arguments:** all of `unique_values` **except** `max_unique`, **plus**:
+**Arguments:** same as `unique_values` **except** no `max_unique`, **plus**:
 
 | Field | Type | Default | Notes |
 |-------|------|---------|--------|
 | `top_n` | integer | `20` | Maximum `100`; number of `{value,count}` rows returned. |
 | `include_empty` | boolean | `false` | When `true`, count rows where the field is empty after trim. |
+
+(`path`, `root`, `max_bytes`, `delimiter`, `field_index`, `trim_space`, and `max_lines` behave as for `unique_values`.)
 
 **`structuredContent` shape:**
 
@@ -242,4 +246,4 @@ Stable errors: `ErrInvalidInput`, `ErrAbsolutePath`, `ErrDotDot`, `ErrTraversal`
 - `top_terms` line buffer: **4 MiB** per file line (`textscan`); line count capped by `max_lines` (default / hard max **1_000_000**).
 - `unique_values` and `field_frequency`: same per-line and `max_lines` caps as above; `field_frequency` holds all distinct values in memory for counting (no `max_unique` cap).
 
-The `cmd/wc-stats-mcp` binary registers exactly the tools listed in `internal/tools.ProductionToolNames` (kept in sync with `RegisterProduction`). Tests assert that `tools/list` metadata schemas for those names marshal to JSON and round-trip.
+The `cmd/wc-stats-mcp` binary calls `tools.RegisterProduction`, which registers **`count_lines_words_bytes`**, **`field_frequency`**, **`server.ping`**, **`top_terms`**, and **`unique_values`** (`internal/tools.ProductionToolNames`). Tests assert `tools/list` schemas for those names marshal to JSON and round-trip.

@@ -1,0 +1,49 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Build archives and checksums
+        env:
+          VERSION: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          COMMIT_SHORT="${GITHUB_SHA:0:7}"
+          DATE="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          LDFLAGS="-s -w -X wc-stats-mcp/internal/version.Version=${VERSION} -X wc-stats-mcp/internal/version.Commit=${COMMIT_SHORT} -X wc-stats-mcp/internal/version.Date=${DATE}"
+          for pair in linux/amd64 linux/arm64 darwin/amd64 darwin/arm64; do
+            os=${pair%%/*}
+            arch=${pair##*/}
+            bin="wc-stats-mcp-${os}-${arch}"
+            CGO_ENABLED=0 GOOS="${os}" GOARCH="${arch}" go build -trimpath \
+              -ldflags "${LDFLAGS}" \
+              -o "dist/${bin}" ./cmd/wc-stats-mcp
+            tar -C dist -czvf "dist/${bin}.tar.gz" "${bin}"
+            rm "dist/${bin}"
+          done
+          (cd dist && sha256sum *.tar.gz | tee checksums.txt)
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            dist/*.tar.gz
+            dist/checksums.txt
