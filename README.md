@@ -24,13 +24,13 @@ With version metadata (optional):
 
 ```bash
 go build -o wc-stats-mcp \
-  -ldflags "-X wc-stats-mcp/internal/version.Version=0.1.0 -X wc-stats-mcp/internal/version.Commit=$(git rev-parse --short HEAD) -X wc-stats-mcp/internal/version.Date=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+  -ldflags "-X github.com/ipolyzos/wc-stats-mcp/internal/version.Version=0.1.0 -X github.com/ipolyzos/wc-stats-mcp/internal/version.Commit=$(git rev-parse --short HEAD) -X github.com/ipolyzos/wc-stats-mcp/internal/version.Date=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
   ./cmd/wc-stats-mcp
 ```
 
 ## Run
 
-The server speaks **newline-delimited JSON-RPC 2.0** on stdio (see [docs/architecture.md](docs/architecture.md)).
+The server speaks **newline-delimited JSON-RPC 2.0** on stdio (see [docs/tool-contract.md](docs/tool-contract.md)).
 
 ```bash
 ./wc-stats-mcp
@@ -44,6 +44,7 @@ The server speaks **newline-delimited JSON-RPC 2.0** on stdio (see [docs/archite
 
 | Tool | Description |
 |------|-------------|
+| `server.ping` | Skeleton health check; returns `{"ok": true}`. |
 | `count_lines_words_bytes` | `wc` over stdin (`lines`, `words`, `bytes`, `chars`, `all`). |
 | `top_terms` | Tokenize in Go, then `sort` → `uniq -c` → `sort -nr`. |
 | `unique_values` | Extract a delimited field in Go; unique values with optional lex sort. |
@@ -66,6 +67,8 @@ Shared limits and environment knobs are documented in [docs/tools/README.md](doc
 
 ## Documentation
 
+- [Tool / stdio contract](docs/tool-contract.md)
+- [Local development](docs/development.md)
 - [Architecture](docs/architecture.md)
 - [Security](docs/security.md)
 - [Client contract](docs/client-contract.md)
