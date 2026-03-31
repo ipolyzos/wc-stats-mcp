@@ -7,7 +7,7 @@
 
 ## Requirements
 
-- **Go 1.22+** if you build from source.
+- **Go 1.23+** if you build from source.
 - **`wc`** on `PATH` for the `count_lines_words_bytes` tool (typical on Linux/macOS).
 
 ## Install
