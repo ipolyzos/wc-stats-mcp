@@ -8,8 +8,10 @@ import (
 	"strings"
 )
 
+// DefaultMaxFileBytes is the default cap for ResolveUnderRoot (25 MiB).
 const DefaultMaxFileBytes = 25 << 20
 
+// Limits configures optional checks. Zero MaxFileBytes uses DefaultMaxFileBytes.
 type Limits struct {
 	MaxFileBytes int64
 }
@@ -21,7 +23,14 @@ func (l Limits) maxBytes() int64 {
 	return l.MaxFileBytes
 }
 
-// ResolveUnderRoot joins userPath under root, resolves symlinks, and verifies a regular file under root within size limit.
+// ResolveUnderRoot joins userPath under root, resolves symlinks to the final target,
+// and verifies the target exists, is a regular file, stays within root, and respects MaxFileBytes.
+//
+// Symlink policy: intermediate and final symlinks are followed via filepath.EvalSymlinks.
+// After resolution, the real path must still lie under the real root directory; links that
+// escape the root are rejected (ErrTraversal).
+//
+// userPath must be relative and must not contain a ".." path element (ErrDotDot).
 func ResolveUnderRoot(root, userPath string, lim Limits) (resolved string, info fs.FileInfo, err error) {
 	root = strings.TrimSpace(root)
 	userPath = strings.TrimSpace(userPath)

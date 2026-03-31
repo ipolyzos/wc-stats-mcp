@@ -46,7 +46,7 @@ After a successful build:
 
 The server is intended to speak MCP over stdio; exact invocation will match the implementation in `README.md` as it lands.
 
-Subprocess policy (no shell, timeouts, stdout/stderr caps) is documented in [security.md](security.md).
+Path validation and related security rules are documented in [security.md](security.md).
 
 ## Contributing workflow
 
