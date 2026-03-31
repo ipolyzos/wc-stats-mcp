@@ -36,7 +36,7 @@
 ## Validation layer
 
 - **`validate.ResolveUnderRoot(root, userPath, limits)`** runs before any file open: relative path, no `..`, join+clean under real root, **EvalSymlinks** on root and target, regular file, size check (default **25 MiB**, optional **`max_bytes`** tightening).
-- Handlers return **`fmt.Errorf("validate: %w", err)`** so callers and JSON-RPC **`reason`** strings stay correlated with `internal/validate` sentinel errors.
+- File tools return **`validate` errors as-is** (`ResolveUnderRoot` already uses the `validate: …` prefix); avoid double-wrapping.
 
 ## Exec runner
 
