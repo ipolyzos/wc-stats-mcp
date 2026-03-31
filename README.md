@@ -1,83 +1,25 @@
-# wc-stats-mcp
+# wc-stats-mcp (WIP)
 
-A **read-only** [Model Context Protocol](https://modelcontextprotocol.io/) server over **stdio** that exposes text statistics tools backed by coreutils-style behavior (`wc`, `sort`, `uniq`, and optionally `cut`), with strict limits and deterministic locale settings.
+**Work in progress:** a **read-only** [Model Context Protocol](https://modelcontextprotocol.io/) server over **stdio** for text statistics (wrapping allowlisted coreutils such as `wc`, `sort`, `uniq`, and optionally `cut`), with strict limits and deterministic locale (`LC_ALL=C` / `LANG=C`).
 
-## Guarantees
+## Planned MCP tools
 
-- **Read-only**: the server does not write to the filesystem or perform outbound network I/O for tool execution.
-- **No shell**: subprocesses are started with explicit argv only (`exec.CommandContext`); no `sh -c`.
-- **Determinism**: child processes run with `LC_ALL=C` and `LANG=C` for stable collation and tool output where applicable.
-- **Allowlisted binaries**: only `wc`, `sort`, `uniq`, and `cut` may be executed (resolved via `PATH`).
+| Tool | Purpose (planned) |
+|------|---------------------|
+| `count_lines_words_bytes` | Line / word / byte / character counts via `wc`. |
+| `top_terms` | Token frequency: tokenize in Go, then `sort` → `uniq -c` → `sort -nr`. |
+| `unique_values` | Delimited field extraction and unique values (deterministic sort optional). |
+| `field_frequency` | Per-field value counts via sort / uniq pipeline. |
 
-## Supported platforms
+Implementation, schemas, and client contract will be documented under `docs/` as they land.
 
-- **Linux** and **macOS**: primary targets.
-- **Windows**: best-effort (path resolution and coreutils availability vary).
+## Local development
 
-## Build
-
-```bash
-go build -o wc-stats-mcp ./cmd/wc-stats-mcp
-```
-
-With version metadata (optional):
-
-```bash
-go build -o wc-stats-mcp \
-  -ldflags "-X github.com/ipolyzos/wc-stats-mcp/internal/version.Version=0.1.0 -X github.com/ipolyzos/wc-stats-mcp/internal/version.Commit=$(git rev-parse --short HEAD) -X github.com/ipolyzos/wc-stats-mcp/internal/version.Date=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-  ./cmd/wc-stats-mcp
-```
-
-## Run
-
-The server speaks **newline-delimited JSON-RPC 2.0** on stdio (see [docs/tool-contract.md](docs/tool-contract.md)).
-
-```bash
-./wc-stats-mcp
-```
-
-```bash
-./wc-stats-mcp --version
-```
-
-## Tool catalog
-
-| Tool | Description |
-|------|-------------|
-| `server.ping` | Skeleton health check; returns `{"ok": true}`. |
-| `count_lines_words_bytes` | `wc` over stdin (`lines`, `words`, `bytes`, `chars`, `all`). |
-| `top_terms` | Tokenize in Go, then `sort` → `uniq -c` → `sort -nr`. |
-| `unique_values` | Extract a delimited field in Go; unique values with optional lex sort. |
-| `field_frequency` | Extract a field in Go, then `sort` → `uniq -c` → `sort -nr`. |
-
-Shared limits and environment knobs are documented in [docs/tools/README.md](docs/tools/README.md) and [docs/security.md](docs/security.md).
-
-## Configuration (environment)
-
-| Variable | Purpose |
-|----------|---------|
-| `WC_STATS_MCP_TIMEOUT` | Default subprocess timeout (e.g. `2s`). |
-| `WC_STATS_MCP_MAX_STDIN_BYTES` | Max stdin bytes per subprocess. |
-| `WC_STATS_MCP_MAX_STDOUT_BYTES` | Max captured stdout bytes. |
-| `WC_STATS_MCP_MAX_STDERR_BYTES` | Max captured stderr bytes. |
-| `WC_STATS_MCP_MAX_TEXT_BYTES` | Max `text` argument size for tools. |
-| `WC_STATS_MCP_MAX_LINES` | Max logical lines processed for line-oriented tools. |
-| `WC_STATS_MCP_MAX_TOKENS` | Max tokens emitted by tokenizers. |
-| `WC_STATS_MCP_MAX_TOP_N` | Upper bound for `top_n`-style parameters. |
-
-## Documentation
-
-- [Tool / stdio contract](docs/tool-contract.md)
-- [Local development](docs/development.md)
-- [Architecture](docs/architecture.md)
-- [Security](docs/security.md)
-- [Client contract](docs/client-contract.md)
-- [Tools](docs/tools/README.md)
-- [Releasing](docs/releasing.md)
+See [docs/development.md](docs/development.md) for build, test, and run commands.
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for branch naming, **docs-before-commit**, test-before-push, PRs to `develop`, and releases from `main` only.
+Branches **`main`** and **`develop`**, PR-only workflow, branch prefixes, and **test-before-PR** are described in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 

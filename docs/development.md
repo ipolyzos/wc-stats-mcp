@@ -2,38 +2,50 @@
 
 ## Prerequisites
 
-- Go **1.22+**
+- **Go** 1.22+ (`go version`).
 
-## Commands
+## Clone and branch
 
 ```bash
-make build    # produces ./wc-stats-mcp
-make test     # go test ./...
-make fmt      # go fmt ./...
-make lint     # go vet ./...
+git clone https://github.com/ipolyzos/wc-stats-mcp.git
+cd wc-stats-mcp
+git checkout develop
+git pull
+git checkout -b feature/your-change
 ```
 
-Or directly:
+## Build
 
 ```bash
 go build -o wc-stats-mcp ./cmd/wc-stats-mcp
-go test ./...
 ```
 
-## Run (stdio)
+When the `cmd/wc-stats-mcp` tree is not present yet, `go build ./...` validates packages only.
+
+## Test
 
 ```bash
+go test ./...
+go vet ./...
+```
+
+On Linux, when touching concurrency:
+
+```bash
+go test -race ./...
+```
+
+## Run (stdio MCP)
+
+After a successful build:
+
+```bash
+./wc-stats-mcp --version
 ./wc-stats-mcp
 ```
 
-Protocol assumptions (framing, methods, errors) are documented in [tool-contract.md](tool-contract.md).
+The server is intended to speak MCP over stdio; exact invocation will match the implementation in `README.md` as it lands.
 
-## Version info
+## Contributing workflow
 
-```bash
-go run ./cmd/wc-stats-mcp --version
-```
-
-## Contributing
-
-See [CONTRIBUTING.md](../CONTRIBUTING.md): PRs target `develop`.
+See [CONTRIBUTING.md](../CONTRIBUTING.md): PRs target **`develop`**, releases come from **`main`** via PR.
