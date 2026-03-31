@@ -36,6 +36,38 @@ Runs **`wc -l -w -c`** on a file after **path validation** (`internal/validate`)
 {"jsonrpc":"2.0","id":1,"result":{"structuredContent":{"path":"/srv/project/data/sample.txt","lines":2,"words":4,"bytes":28}}}
 ```
 
+### `top_terms`
+
+Pure-Go streaming tokenizer over a validated file (`internal/validate` + `internal/textscan`). Tokens are Unicode **letters and numbers** only (see `textscan.ForEachNonLetterDigitToken`). Shorter tokens than `min_len` runes are skipped. Results are sorted by **count descending**, then **term ascending** (UTF-8 byte order).
+
+| Argument | Default | Limits |
+|----------|---------|--------|
+| `path` | (required) | Relative under `root`. |
+| `root` | process `cwd` | — |
+| `top_n` | `20` | max `100` |
+| `min_len` | `3` | max `30` (Unicode runes per token) |
+| `case_sensitive` | `false` | If `false`, fold with `bytes.ToLower` on each line before tokenizing. |
+| `max_lines` | `1_000_000` | Hard max `1_000_000` lines scanned. |
+
+**Structured result:**
+
+```json
+{
+  "path": "/absolute/resolved/file.txt",
+  "top_n": 3,
+  "terms": [
+    { "term": "apple", "count": 3 },
+    { "term": "banana", "count": 2 }
+  ]
+}
+```
+
+**Example `tools/call` (one NDJSON line):**
+
+```json
+{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"top_terms","arguments":{"path":"notes/sample.txt","root":"/data/repo","top_n":5,"min_len":3,"case_sensitive":false}}}
+```
+
 ### `server.ping`
 
 Health check; returns `{"ok": true}` inside `structuredContent`.
@@ -44,7 +76,6 @@ Health check; returns `{"ok": true}` inside `structuredContent`.
 
 | Tool | Purpose (planned) |
 |------|-------------------|
-| `top_terms` | Token frequency: tokenize in Go, then `sort` → `uniq -c` → `sort -nr`. |
 | `unique_values` | Delimited field extraction and unique values (deterministic sort optional). |
 | `field_frequency` | Per-field value counts via sort / uniq pipeline. |
 

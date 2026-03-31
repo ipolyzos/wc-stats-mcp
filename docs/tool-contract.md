@@ -76,6 +76,41 @@ Example:
 |------|--------|
 | `server.ping` | `{"ok": true}` (inside `structuredContent`) |
 
+## Tool: `top_terms`
+
+Counts token frequencies in a UTF-8 text file using **pure Go** streaming (`internal/textscan`).
+
+**Arguments:**
+
+| Field | Type | Default | Notes |
+|-------|------|---------|--------|
+| `path` | string | required | Relative to `root`. |
+| `root` | string | server `cwd` | Sandbox directory (`validate.ResolveUnderRoot`). |
+| `top_n` | integer | `20` | Maximum `100`. |
+| `min_len` | integer | `3` | Minimum token length in **Unicode runes**; maximum `30`. |
+| `case_sensitive` | boolean | `false` | When `false`, each line is lowercased (`bytes.ToLower`) before tokenization. |
+| `max_lines` | integer | `1_000_000` | Hard-capped at `1_000_000`; per-line cap remains **4 MiB** (`textscan.DefaultMaxLineBytes`). |
+
+**Token rule:** maximal substrings of Unicode letters or numbers (`unicode.IsLetter` / `unicode.IsNumber`); all other runes delimit tokens.
+
+**`structuredContent` shape:**
+
+```json
+{
+  "path": "/resolved/path.txt",
+  "top_n": 5,
+  "terms": [{ "term": "example", "count": 12 }]
+}
+```
+
+Sorting: **count descending**, then **term ascending** (lexicographic UTF-8 byte order).
+
+**Example `tools/call`:**
+
+```json
+{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"top_terms","arguments":{"path":"data.txt","top_n":10,"min_len":3}}}
+```
+
 ## File path validation (read-only tools)
 
 Tools that open paths on behalf of the user must treat paths as **untrusted** and validate them against a **server-configured root directory** using `internal/validate`:
@@ -90,6 +125,7 @@ Stable errors: `ErrInvalidInput`, `ErrAbsolutePath`, `ErrDotDot`, `ErrTraversal`
 
 ## Limits
 
-- Scanner buffer per line: **4 MiB** (oversized lines error at read time).
+- JSON-RPC line buffer: **4 MiB** per inbound message.
+- `top_terms` line buffer: **4 MiB** per file line (`textscan`); line count capped by `max_lines` (default / hard max **1_000_000**).
 
 Full product limits (text size, subprocess caps) will be documented alongside future tools.
