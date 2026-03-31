@@ -76,6 +76,46 @@ Example:
 |------|--------|
 | `server.ping` | `{"ok": true}` (inside `structuredContent`) |
 
+## Tool: `unique_values`
+
+Streams lines from a UTF-8 text file and collects **distinct** values from a fixed **0-based** column.
+
+**Splitting:** `strings.Split` on the delimiter string (default **`,`**, max **3 bytes**). This is **not** RFC 4180 CSV: commas inside quotes are **not** protected unless we add an explicit CSV mode later.
+
+**Rows:** If a line has fewer than `field_index+1` fields, the line is **ignored** (no placeholder value).
+
+**Sorting:** `values` are ordered with **`sort.Strings`**: bytewise lexicographic order of the UTF-8 encoding (same as Go `string` comparison).
+
+**Caps:** `max_unique` defaults to **1000**, hard-capped at **10_000**; once that many distinct values exist, scanning stops successfully. `max_lines` defaults to **1_000_000** (hard cap). Per-line cap remains **4 MiB** (`textscan`).
+
+**Arguments:**
+
+| Field | Type | Default | Notes |
+|-------|------|---------|--------|
+| `path` | string | required | Relative to `root`. |
+| `root` | string | cwd | |
+| `delimiter` | string | `,` | Max 3 bytes. |
+| `field_index` | integer | required | 0 … 1000. |
+| `trim_space` | boolean | `true` | `strings.TrimSpace` on the field. |
+| `max_unique` | integer | 1000 | Hard max 10_000. |
+| `max_lines` | integer | 1_000_000 | Hard max 1_000_000. |
+
+**`structuredContent`:**
+
+```json
+{
+  "path": "/resolved/path.txt",
+  "field_index": 1,
+  "values": ["east", "north", "south"]
+}
+```
+
+**Example `tools/call`:**
+
+```json
+{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"unique_values","arguments":{"path":"data.tsv","field_index":0,"delimiter":"\t"}}}
+```
+
 ## File path validation (read-only tools)
 
 Tools that open paths on behalf of the user must treat paths as **untrusted** and validate them against a **server-configured root directory** using `internal/validate`:
@@ -90,6 +130,8 @@ Stable errors: `ErrInvalidInput`, `ErrAbsolutePath`, `ErrDotDot`, `ErrTraversal`
 
 ## Limits
 
-- Scanner buffer per line: **4 MiB** (oversized lines error at read time).
+- JSON-RPC inbound line buffer: **4 MiB**.
+- File line buffer (`textscan`): **4 MiB** per line.
+- `unique_values`: `max_lines` default/hard **1_000_000**; `max_unique` default **1000**, hard **10_000**.
 
 Full product limits (text size, subprocess caps) will be documented alongside future tools.
