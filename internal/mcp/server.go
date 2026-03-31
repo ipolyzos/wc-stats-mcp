@@ -108,13 +108,11 @@ func (s *Server) handleToolsList(id json.RawMessage) *Response {
 	names := s.Reg.Names()
 	list := make([]map[string]any, 0, len(names))
 	for _, n := range names {
+		desc, schema := tools.ToolMeta(n)
 		list = append(list, map[string]any{
 			"name":        n,
-			"description": "placeholder",
-			"inputSchema": map[string]any{
-				"type":       "object",
-				"properties": map[string]any{},
-			},
+			"description": desc,
+			"inputSchema": schema,
 		})
 	}
 	res, _ := json.Marshal(map[string]any{"tools": list})
