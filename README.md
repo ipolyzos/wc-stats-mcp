@@ -3,7 +3,7 @@
 [![CI](https://github.com/ipolyzos/wc-stats-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/ipolyzos/wc-stats-mcp/actions/workflows/ci.yml)
 [![Docs](https://github.com/ipolyzos/wc-stats-mcp/actions/workflows/docs.yml/badge.svg)](https://github.com/ipolyzos/wc-stats-mcp/actions/workflows/docs.yml)
 
-**v0.1.0** — a **read-only** [Model Context Protocol](https://modelcontextprotocol.io/) server over **stdio** for text statistics. It validates all file paths under a configurable root, applies strict size and line limits for streaming tools, and uses coreutils **`wc`** only for line/word/byte counts.
+**v0.2.0** — a **read-only** [Model Context Protocol](https://modelcontextprotocol.io/) server over **stdio** for text statistics. It validates all file paths under a configurable root, applies strict size and line limits for streaming tools, and uses coreutils **`wc`** only for line/word/byte counts.
 
 ## Requirements
 
