@@ -106,7 +106,7 @@ func UniqueValuesHandler(vlim validate.Limits) Handler {
 		reqLim := vlim.WithRequestMaxBytes(args.MaxBytes)
 		resolved, _, err := validate.ResolveUnderRoot(root, args.Path, reqLim)
 		if err != nil {
-			return nil, fmt.Errorf("validate: %w", err)
+			return nil, err
 		}
 
 		f, err := os.Open(resolved)

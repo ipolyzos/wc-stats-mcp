@@ -149,6 +149,7 @@ Health check → `{"ok": true}` in `structuredContent`.
 | [docs/tool-contract.md](docs/tool-contract.md) | JSON-RPC, errors, limits, per-tool contract |
 | [docs/security.md](docs/security.md) | Path policy, subprocess rules, read-only posture |
 | [docs/architecture.md](docs/architecture.md) | Packages, stdio MCP, why pure-Go scanning |
+| [docs/examples.md](docs/examples.md) | Inputs/outputs and edge cases per tool |
 | [docs/troubleshooting.md](docs/troubleshooting.md) | Common failures and fixes |
 | [docs/releases.md](docs/releases.md) | Tagging and GitHub Releases |
 | [docs/development.md](docs/development.md) | Local build and test |

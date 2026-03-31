@@ -51,7 +51,7 @@ func CountLinesWordsBytesHandler(r *exec.Runner, lim validate.Limits) Handler {
 		reqLim := lim.WithRequestMaxBytes(args.MaxBytes)
 		resolved, _, err := validate.ResolveUnderRoot(root, args.Path, reqLim)
 		if err != nil {
-			return nil, fmt.Errorf("validate: %w", err)
+			return nil, err
 		}
 
 		stdout, stderr, err := r.Run("wc", []string{"-l", "-w", "-c", resolved})

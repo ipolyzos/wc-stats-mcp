@@ -115,6 +115,8 @@ Tools that read files share the following **argument** names and semantics (see 
 
 ## Deterministic ordering
 
+Sort keys are compared as **UTF-8 byte sequences** (Go `string` comparison order), **not** Unicode collation tables or locale-aware sorting. Same numeric **`count`** ties break by lexicographic key order.
+
 | Tool | Ordering rule |
 |------|----------------|
 | `top_terms` | **Count descending**, then **term ascending** (UTF-8 byte order). |
@@ -247,3 +249,200 @@ Stable errors: `ErrInvalidInput`, `ErrAbsolutePath`, `ErrDotDot`, `ErrTraversal`
 - `unique_values` and `field_frequency`: same per-line and `max_lines` caps as above; `field_frequency` holds all distinct values in memory for counting (no `max_unique` cap).
 
 The `cmd/wc-stats-mcp` binary calls `tools.RegisterProduction`, which registers **`count_lines_words_bytes`**, **`field_frequency`**, **`server.ping`**, **`top_terms`**, and **`unique_values`** (`internal/tools.ProductionToolNames`). Tests assert `tools/list` schemas for those names marshal to JSON and round-trip.
+
+## `tools/list` inputSchema (authoritative shapes)
+
+These mirror `internal/tools/catalog.go` (`ToolMeta`). Property types are JSON Schema–like: **`integer`**, **`string`**, **`boolean`**. Omitted keys use handler defaults.
+
+### `server.ping`
+
+```json
+{ "type": "object", "properties": {} }
+```
+
+### `count_lines_words_bytes`
+
+```json
+{
+  "type": "object",
+  "required": ["path"],
+  "properties": {
+    "path": { "type": "string" },
+    "root": { "type": "string" },
+    "max_bytes": { "type": "integer" }
+  }
+}
+```
+
+### `top_terms`
+
+```json
+{
+  "type": "object",
+  "required": ["path"],
+  "properties": {
+    "path": { "type": "string" },
+    "root": { "type": "string" },
+    "max_bytes": { "type": "integer" },
+    "top_n": { "type": "integer" },
+    "min_len": { "type": "integer" },
+    "case_sensitive": { "type": "boolean" },
+    "max_lines": { "type": "integer" }
+  }
+}
+```
+
+### `unique_values`
+
+```json
+{
+  "type": "object",
+  "required": ["path", "field_index"],
+  "properties": {
+    "path": { "type": "string" },
+    "root": { "type": "string" },
+    "max_bytes": { "type": "integer" },
+    "delimiter": { "type": "string" },
+    "field_index": { "type": "integer" },
+    "trim_space": { "type": "boolean" },
+    "max_unique": { "type": "integer" },
+    "max_lines": { "type": "integer" }
+  }
+}
+```
+
+### `field_frequency`
+
+```json
+{
+  "type": "object",
+  "required": ["path", "field_index"],
+  "properties": {
+    "path": { "type": "string" },
+    "root": { "type": "string" },
+    "max_bytes": { "type": "integer" },
+    "delimiter": { "type": "string" },
+    "field_index": { "type": "integer" },
+    "trim_space": { "type": "boolean" },
+    "max_lines": { "type": "integer" },
+    "top_n": { "type": "integer" },
+    "include_empty": { "type": "boolean" }
+  }
+}
+```
+
+`tools/list` also returns a string **`description`** per tool (not shown above).
+
+## End-to-end examples (request → success result)
+
+Illustrative **`result`** objects omit MCP wrapper noise; real stdout lines are single JSON-RPC responses whose **`result`** contains **`structuredContent`** (see above).
+
+### Ping
+
+**Request:**
+
+```json
+{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"server.ping","arguments":{}}}
+```
+
+**`structuredContent`:**
+
+```json
+{ "ok": true }
+```
+
+### Count lines/words/bytes
+
+**Request:**
+
+```json
+{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"count_lines_words_bytes","arguments":{"path":"sample.txt","root":"/project"}}}
+```
+
+**`structuredContent`:**
+
+```json
+{ "path": "/project/sample.txt", "lines": 2, "words": 4, "bytes": 28 }
+```
+
+### Top terms
+
+**Request:**
+
+```json
+{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"top_terms","arguments":{"path":"notes.txt","root":"/project","top_n":3,"min_len":2,"case_sensitive":false}}}
+```
+
+**`structuredContent`:**
+
+```json
+{
+  "path": "/project/notes.txt",
+  "top_n": 3,
+  "terms": [
+    { "term": "alpha", "count": 4 },
+    { "term": "beta", "count": 2 }
+  ]
+}
+```
+
+### Unique values
+
+**Request:**
+
+```json
+{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"unique_values","arguments":{"path":"rows.csv","root":"/project","field_index":1,"delimiter":","}}}
+```
+
+**`structuredContent`:**
+
+```json
+{
+  "path": "/project/rows.csv",
+  "field_index": 1,
+  "values": ["east", "north", "south"]
+}
+```
+
+### Field frequency
+
+**Request:**
+
+```json
+{"jsonrpc":"2.0","id":5,"method":"tools/call","params":{"name":"field_frequency","arguments":{"path":"rows.csv","root":"/project","field_index":0,"top_n":5,"include_empty":false}}}
+```
+
+**`structuredContent`:**
+
+```json
+{
+  "path": "/project/rows.csv",
+  "field_index": 0,
+  "top_n": 5,
+  "frequencies": [
+    { "value": "user-a", "count": 10 },
+    { "value": "user-b", "count": 3 }
+  ]
+}
+```
+
+### Tool error (validation)
+
+**Request** (absolute `path`):
+
+```json
+{"jsonrpc":"2.0","id":6,"method":"tools/call","params":{"name":"top_terms","arguments":{"path":"/etc/passwd"}}}
+```
+
+**Response `error`:**
+
+```json
+{
+  "code": -32000,
+  "message": "tool execution failed",
+  "details": {
+    "tool": "top_terms",
+    "reason": "validate: absolute paths are not allowed"
+  }
+}
+```
