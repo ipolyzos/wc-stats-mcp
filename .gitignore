@@ -1,0 +1,16 @@
+# Binaries
+/wc-stats-mcp
+*.exe
+*.test
+*.out
+
+# Go
+vendor/
+coverage.out
+*.prof
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
