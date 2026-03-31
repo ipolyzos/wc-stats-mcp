@@ -111,6 +111,58 @@ Sorting: **count descending**, then **term ascending** (lexicographic UTF-8 byte
 {"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"top_terms","arguments":{"path":"data.txt","top_n":10,"min_len":3}}}
 ```
 
+## Tool: `unique_values`
+
+Streams delimited lines from a UTF-8 file (`internal/textscan` + `internal/validate`). Field extraction uses **naive** `strings.Split` on `delimiter` — **not** RFC 4180 CSV (no quoted fields, no escapes). Rows with fewer than `field_index+1` fields are skipped.
+
+**Arguments:**
+
+| Field | Type | Default | Notes |
+|-------|------|---------|--------|
+| `path` | string | required | Relative to `root`. |
+| `field_index` | integer | required | 0-based; maximum `1000`. |
+| `root` | string | server `cwd` | Sandbox directory. |
+| `delimiter` | string | `,` | Maximum **3** bytes. |
+| `trim_space` | boolean | `true` | Trim ASCII spaces around the extracted field. |
+| `max_unique` | integer | `1000` | Stop after this many distinct values; hard max `10_000`. |
+| `max_lines` | integer | `1_000_000` | Hard-capped at `1_000_000`; per-line cap **4 MiB** (`textscan.DefaultMaxLineBytes`). |
+
+**`structuredContent` shape:**
+
+```json
+{
+  "path": "/resolved/path.txt",
+  "field_index": 1,
+  "values": ["admin", "guest", "user"]
+}
+```
+
+Sorting: distinct `values` are **ascending** lexicographic UTF-8 byte order.
+
+## Tool: `field_frequency`
+
+Same streaming, path validation, delimiter, and field-index semantics as `unique_values`. Counts occurrences of each field value (after optional trim). Empty strings are **omitted** from counts unless `include_empty` is `true`.
+
+**Arguments:** all of `unique_values` **except** `max_unique`, **plus**:
+
+| Field | Type | Default | Notes |
+|-------|------|---------|--------|
+| `top_n` | integer | `20` | Maximum `100`; number of `{value,count}` rows returned. |
+| `include_empty` | boolean | `false` | When `true`, count rows where the field is empty after trim. |
+
+**`structuredContent` shape:**
+
+```json
+{
+  "path": "/resolved/path.txt",
+  "field_index": 1,
+  "top_n": 20,
+  "frequencies": [{ "value": "x", "count": 12 }]
+}
+```
+
+Sorting: **count descending**, then **value ascending** (UTF-8 byte order), then truncated to `top_n` entries.
+
 ## File path validation (read-only tools)
 
 Tools that open paths on behalf of the user must treat paths as **untrusted** and validate them against a **server-configured root directory** using `internal/validate`:
@@ -127,5 +179,6 @@ Stable errors: `ErrInvalidInput`, `ErrAbsolutePath`, `ErrDotDot`, `ErrTraversal`
 
 - JSON-RPC line buffer: **4 MiB** per inbound message.
 - `top_terms` line buffer: **4 MiB** per file line (`textscan`); line count capped by `max_lines` (default / hard max **1_000_000**).
+- `unique_values` and `field_frequency`: same per-line and `max_lines` caps as above; `field_frequency` holds all distinct values in memory for counting (no `max_unique` cap).
 
 Full product limits (text size, subprocess caps) will be documented alongside future tools.

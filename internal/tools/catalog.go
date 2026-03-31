@@ -54,6 +54,80 @@ func ToolMeta(name string) (description string, schema map[string]any) {
 				},
 			},
 		}
+	case "unique_values":
+		return "Stream delimited lines and return sorted distinct values for one field index (naive split; not CSV-safe).", map[string]any{
+			"type":     "object",
+			"required": []string{"path", "field_index"},
+			"properties": map[string]any{
+				"path": map[string]any{
+					"type":        "string",
+					"description": "Relative path under root.",
+				},
+				"root": map[string]any{
+					"type":        "string",
+					"description": "Sandbox root; defaults to cwd.",
+				},
+				"delimiter": map[string]any{
+					"type":        "string",
+					"description": "Field delimiter; default comma; max 3 bytes.",
+				},
+				"field_index": map[string]any{
+					"type":        "integer",
+					"description": "0-based column index; max 1000.",
+				},
+				"trim_space": map[string]any{
+					"type":        "boolean",
+					"description": "Trim ASCII space around the field; default true.",
+				},
+				"max_unique": map[string]any{
+					"type":        "integer",
+					"description": "Stop after this many distinct values; default 1000; hard max 10_000.",
+				},
+				"max_lines": map[string]any{
+					"type":        "integer",
+					"description": "Max lines to scan; default 1_000_000; hard max 1_000_000.",
+				},
+			},
+		}
+	case "field_frequency":
+		return "Stream delimited lines and return top-N value frequencies for one field (naive split; not CSV-safe).", map[string]any{
+			"type":     "object",
+			"required": []string{"path", "field_index"},
+			"properties": map[string]any{
+				"path": map[string]any{
+					"type":        "string",
+					"description": "Relative path under root.",
+				},
+				"root": map[string]any{
+					"type":        "string",
+					"description": "Sandbox root; defaults to cwd.",
+				},
+				"delimiter": map[string]any{
+					"type":        "string",
+					"description": "Field delimiter; default comma; max 3 bytes.",
+				},
+				"field_index": map[string]any{
+					"type":        "integer",
+					"description": "0-based column index; max 1000.",
+				},
+				"trim_space": map[string]any{
+					"type":        "boolean",
+					"description": "Trim ASCII space around the field; default true.",
+				},
+				"max_lines": map[string]any{
+					"type":        "integer",
+					"description": "Max lines to scan; default 1_000_000; hard max 1_000_000.",
+				},
+				"top_n": map[string]any{
+					"type":        "integer",
+					"description": "Max frequency rows to return; default 20; max 100.",
+				},
+				"include_empty": map[string]any{
+					"type":        "boolean",
+					"description": "Count empty field values after trim; default false.",
+				},
+			},
+		}
 	default:
 		return "Tool.", map[string]any{
 			"type":       "object",
