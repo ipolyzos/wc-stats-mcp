@@ -30,7 +30,11 @@ func main() {
 	lim := validate.Limits{}
 
 	reg := tools.NewRegistry()
-	tools.RegisterProduction(reg, runner, lim)
+	reg.Register("server.ping", tools.PingHandler)
+	reg.Register("count_lines_words_bytes", tools.CountLinesWordsBytesHandler(runner, lim))
+	reg.Register("top_terms", tools.TopTermsHandler(lim))
+	reg.Register("unique_values", tools.UniqueValuesHandler(lim))
+	reg.Register("field_frequency", tools.FieldFrequencyHandler(lim))
 
 	srv := &mcp.Server{
 		Reg: reg,
