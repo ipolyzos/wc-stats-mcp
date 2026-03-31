@@ -81,12 +81,15 @@ Streaming tokenizer over a validated file. Tokens = Unicode **letters and number
 | `root` | process `cwd` | — |
 | `max_bytes` | (omit) | Optional stricter file size cap. |
 | `top_n` | `20` | max `100` |
+| `offset` | `0` | Pagination start index in sorted terms list. |
 | `min_len` | `3` | max `30` (runes) |
 | `case_sensitive` | `false` | If `false`, `bytes.ToLower` per line before tokenizing. |
 | `max_lines` | `1_000_000` | Hard max `1_000_000`. |
 
+Response includes pagination metadata: `offset`, `total_unique`, `has_more`, and `next_offset` (when more rows exist).
+
 ```json
-{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"top_terms","arguments":{"path":"notes/sample.txt","root":"/data/repo","top_n":5,"min_len":3,"case_sensitive":false}}}
+{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"top_terms","arguments":{"path":"notes/sample.txt","root":"/data/repo","top_n":5,"offset":0,"min_len":3,"case_sensitive":false}}}
 ```
 
 ---

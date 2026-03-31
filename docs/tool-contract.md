@@ -153,6 +153,7 @@ Counts token frequencies in a UTF-8 text file using **pure Go** streaming (`inte
 | `root` | string | server `cwd` | Sandbox directory. |
 | `max_bytes` | integer | (omit) | Optional stricter file size cap; see shared conventions. |
 | `top_n` | integer | `20` | Maximum `100`. |
+| `offset` | integer | `0` | Pagination start index in the sorted results. |
 | `min_len` | integer | `3` | Minimum token length in **Unicode runes**; maximum `30`. |
 | `case_sensitive` | boolean | `false` | When `false`, each line is normalized with `bytes.ToLower` before tokenization. |
 | `max_lines` | integer | `1_000_000` | Hard-capped at `1_000_000`; see shared conventions for line/byte caps. |
@@ -165,6 +166,10 @@ Counts token frequencies in a UTF-8 text file using **pure Go** streaming (`inte
 {
   "path": "/resolved/path.txt",
   "top_n": 5,
+  "offset": 0,
+  "total_unique": 42,
+  "has_more": true,
+  "next_offset": 5,
   "terms": [{ "term": "example", "count": 12 }]
 }
 ```
@@ -172,7 +177,7 @@ Counts token frequencies in a UTF-8 text file using **pure Go** streaming (`inte
 **Example `tools/call`:**
 
 ```json
-{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"top_terms","arguments":{"path":"data.txt","top_n":10,"min_len":3}}}
+{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"top_terms","arguments":{"path":"data.txt","top_n":10,"offset":0,"min_len":3}}}
 ```
 
 ## Tool: `unique_values`
@@ -285,6 +290,7 @@ These mirror `internal/tools/catalog.go` (`ToolMeta`). Property types are JSON S
     "root": { "type": "string" },
     "max_bytes": { "type": "integer" },
     "top_n": { "type": "integer" },
+    "offset": { "type": "integer" },
     "min_len": { "type": "integer" },
     "case_sensitive": { "type": "boolean" },
     "max_lines": { "type": "integer" }
@@ -370,7 +376,7 @@ Illustrative **`result`** objects omit MCP wrapper noise; real stdout lines are 
 **Request:**
 
 ```json
-{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"top_terms","arguments":{"path":"notes.txt","root":"/project","top_n":3,"min_len":2,"case_sensitive":false}}}
+{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"top_terms","arguments":{"path":"notes.txt","root":"/project","top_n":3,"offset":0,"min_len":2,"case_sensitive":false}}}
 ```
 
 **`structuredContent`:**
@@ -379,6 +385,9 @@ Illustrative **`result`** objects omit MCP wrapper noise; real stdout lines are 
 {
   "path": "/project/notes.txt",
   "top_n": 3,
+  "offset": 0,
+  "total_unique": 2,
+  "has_more": false,
   "terms": [
     { "term": "alpha", "count": 4 },
     { "term": "beta", "count": 2 }
