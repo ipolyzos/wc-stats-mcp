@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-03-31
+
+### Added
+
+- `top_terms` pagination via `offset`, with response metadata: `total_unique`, `has_more`, and `next_offset`.
+- Contract/schema/docs updates for paginated term retrieval (`README.md`, `docs/tool-contract.md`, `docs/examples.md`).
+
 ## [0.1.0] - 2026-03-30
 
 ### Added
@@ -18,4 +25,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **CI** — Go test / gofmt / vet / govulncheck; markdown lint and link check ([.github/workflows](.github/workflows/)).
 - **Release workflow** — tag `v*` builds Linux/macOS **amd64**/**arm64** archives and **SHA-256** checksums ([releases.md](docs/releases.md)).
 
+[0.2.0]: https://github.com/ipolyzos/wc-stats-mcp/releases/tag/v0.2.0
 [0.1.0]: https://github.com/ipolyzos/wc-stats-mcp/releases/tag/v0.1.0

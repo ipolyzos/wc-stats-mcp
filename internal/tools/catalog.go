@@ -59,6 +59,10 @@ func ToolMeta(name string) (description string, schema map[string]any) {
 					"type":        "integer",
 					"description": "Maximum number of terms to return; default 20; maximum 100.",
 				},
+				"offset": map[string]any{
+					"type":        "integer",
+					"description": "Start index into the sorted terms list for pagination; default 0.",
+				},
 				"min_len": map[string]any{
 					"type":        "integer",
 					"description": "Minimum token length in Unicode runes; default 3; maximum 30.",
