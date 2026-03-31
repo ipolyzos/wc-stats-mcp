@@ -23,6 +23,23 @@ func (l Limits) maxBytes() int64 {
 	return l.MaxFileBytes
 }
 
+// WithRequestMaxBytes returns limits for this request: if requestMaxBytes > 0 and
+// smaller than the effective server cap (l.maxBytes()), the returned Limits use
+// requestMaxBytes as MaxFileBytes. Clients cannot raise the cap above the
+// server's effective maximum.
+func (l Limits) WithRequestMaxBytes(requestMaxBytes int64) Limits {
+	if requestMaxBytes <= 0 {
+		return l
+	}
+	effective := l.maxBytes()
+	if requestMaxBytes < effective {
+		out := l
+		out.MaxFileBytes = requestMaxBytes
+		return out
+	}
+	return l
+}
+
 // ResolveUnderRoot joins userPath under root, resolves symlinks to the final target,
 // and verifies the target exists, is a regular file, stays within root, and respects MaxFileBytes.
 //

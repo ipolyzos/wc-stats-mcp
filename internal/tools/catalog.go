@@ -1,5 +1,34 @@
 package tools
 
+// Shared inputSchema copy for path-based tools (tool-contract.md).
+const (
+	schemaDescPath     = "Relative path under root; must be relative with no .. path elements."
+	schemaDescRoot     = "Sandbox root directory used to resolve path; defaults to the server process current working directory."
+	schemaDescMaxBytes = "Optional stricter maximum resolved file size in bytes; cannot exceed the server effective cap. Omit or use 0 for the server default (see tool-contract)."
+	schemaDescMaxLines = "Maximum lines to read from the file; default 1_000_000; hard maximum 1_000_000."
+)
+
+func propPath() map[string]any {
+	return map[string]any{
+		"type":        "string",
+		"description": schemaDescPath,
+	}
+}
+
+func propRoot() map[string]any {
+	return map[string]any{
+		"type":        "string",
+		"description": schemaDescRoot,
+	}
+}
+
+func propMaxBytes() map[string]any {
+	return map[string]any{
+		"type":        "integer",
+		"description": schemaDescMaxBytes,
+	}
+}
+
 // ToolMeta returns MCP list metadata for a registered tool name.
 func ToolMeta(name string) (description string, schema map[string]any) {
 	switch name {
@@ -13,14 +42,9 @@ func ToolMeta(name string) (description string, schema map[string]any) {
 			"type":     "object",
 			"required": []string{"path"},
 			"properties": map[string]any{
-				"path": map[string]any{
-					"type":        "string",
-					"description": "Relative path under root.",
-				},
-				"root": map[string]any{
-					"type":        "string",
-					"description": "Sandbox root directory; defaults to the server process current working directory.",
-				},
+				"path":      propPath(),
+				"root":      propRoot(),
+				"max_bytes": propMaxBytes(),
 			},
 		}
 	case "top_terms":
@@ -28,29 +52,54 @@ func ToolMeta(name string) (description string, schema map[string]any) {
 			"type":     "object",
 			"required": []string{"path"},
 			"properties": map[string]any{
-				"path": map[string]any{
-					"type":        "string",
-					"description": "Relative path under root.",
-				},
-				"root": map[string]any{
-					"type":        "string",
-					"description": "Sandbox root; defaults to cwd.",
-				},
+				"path":      propPath(),
+				"root":      propRoot(),
+				"max_bytes": propMaxBytes(),
 				"top_n": map[string]any{
 					"type":        "integer",
-					"description": "Max terms to return; default 20, max 100.",
+					"description": "Maximum number of terms to return; default 20; maximum 100.",
 				},
 				"min_len": map[string]any{
 					"type":        "integer",
-					"description": "Minimum token length in Unicode runes; default 3, max 30.",
+					"description": "Minimum token length in Unicode runes; default 3; maximum 30.",
 				},
 				"case_sensitive": map[string]any{
 					"type":        "boolean",
-					"description": "If false (default), fold case with Unicode lowercasing before counting.",
+					"description": "If false (default), normalize the line with bytes.ToLower before tokenizing.",
 				},
 				"max_lines": map[string]any{
 					"type":        "integer",
-					"description": "Max lines to scan; default 1_000_000; hard-capped at 1_000_000.",
+					"description": schemaDescMaxLines,
+				},
+			},
+		}
+	case "unique_values":
+		return "Stream delimited lines and return sorted distinct values for one field index (naive split; not CSV-safe).", map[string]any{
+			"type":     "object",
+			"required": []string{"path", "field_index"},
+			"properties": map[string]any{
+				"path":      propPath(),
+				"root":      propRoot(),
+				"max_bytes": propMaxBytes(),
+				"delimiter": map[string]any{
+					"type":        "string",
+					"description": "Field delimiter; default comma; maximum 3 bytes.",
+				},
+				"field_index": map[string]any{
+					"type":        "integer",
+					"description": "Zero-based field index; maximum 1000.",
+				},
+				"trim_space": map[string]any{
+					"type":        "boolean",
+					"description": "Trim ASCII spaces around the field; default true when omitted.",
+				},
+				"max_unique": map[string]any{
+					"type":        "integer",
+					"description": "Stop after this many distinct values; default 1000; hard maximum 10_000.",
+				},
+				"max_lines": map[string]any{
+					"type":        "integer",
+					"description": schemaDescMaxLines,
 				},
 			},
 		}

@@ -41,3 +41,14 @@ func unknownMethod(method string) *ErrorEnvelope {
 		"method": method,
 	})
 }
+
+// ToolExecutionFailed is the standard error for tools/call handler failures (code -32000).
+func ToolExecutionFailed(tool string, err error) *ErrorEnvelope {
+	if err == nil {
+		return errEnvelope(CodeToolError, "tool execution failed", map[string]string{"tool": tool, "reason": "unknown error"})
+	}
+	return errEnvelope(CodeToolError, "tool execution failed", map[string]string{
+		"tool":   tool,
+		"reason": err.Error(),
+	})
+}
