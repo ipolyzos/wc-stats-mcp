@@ -1,34 +1,45 @@
 # Contributing
 
-## Workflow (every change)
+## Branches
 
-Follow this sequence for **every** step of work:
+- **`main`**: release line; protected; merges via PR only.
+- **`develop`**: integration branch; default target for feature PRs; merges via PR only.
 
-1. **Branch**: create a branch using one of `feature/*`, `fix/*`, `chore/*`, or `docs/*` (never commit directly on `main` or `develop`).
-2. **Docs first**: if behavior, interfaces, limits, or usage change, update `README.md` and/or `docs/**` **before** you commit that change.
-3. **Commits**: keep commits **small and focused** — one logical change per commit.
-4. **Test**: run `go test ./...` (and `go vet ./...`) locally **before pushing**.
-5. **Push**: push the branch **after** each commit (or after each logical commit you intend to review separately).
-6. **Pull request**: open a PR into **`develop`**. **Merges are PR-only**; do not push-merge to `develop` or `main`.
-7. **Releases**: **`main` only**. Land work on `develop`, then merge `develop` → `main` via PR; tag and release from `main`.
+Do not push directly to `main` or `develop`.
+
+## Pull requests
+
+- **PR-only merges** into `develop` (and `develop` → `main` for releases).
+- Open a PR **before** merging any work.
+- Run **`go test ./...`** (and `go vet ./...`) **locally before opening or updating a PR**. Fix failures before requesting review.
 
 ## Branch naming
 
-- `feature/*` — new capability
-- `fix/*` — bug fixes
-- `chore/*` — tooling, CI, repo hygiene
-- `docs/*` — documentation-only
+Use a prefix that matches the change type:
+
+| Prefix | Use |
+|--------|-----|
+| `feature/*` | New capability |
+| `fix/*` | Bug fixes |
+| `chore/*` | Tooling, CI, repo hygiene |
+| `docs/*` | Documentation only |
 
 ## Commits
 
-Use [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:`, `chore:`, etc.).
+Use [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `fix:`, `docs:`, `chore:`, etc.
+
+Prefer **small, focused commits** (one logical change per commit).
+
+## Docs and behavior changes
+
+When behavior, interfaces, limits, or usage change, update `README.md` and/or `docs/**` **in the same PR** (ideally in commits before or with the code change).
 
 ## Before merge
 
-1. **CI must be green** (see `.github/workflows/ci.yml` when present).
-2. On Linux, use `go test -race ./...` when touching concurrency.
+1. **CI must be green** when `.github/workflows` exists.
+2. On Linux, use `go test -race ./...` when concurrency is involved.
 
 ## Engineering constraints
 
-- **No shell pipelines**: spawn subprocesses with `exec.CommandContext` and explicit argument slices only.
-- **Read-only server**: no file writes and no outbound network calls from the MCP process.
+- **No shell pipelines**: use `exec.CommandContext` with explicit argument slices only (no `sh -c`).
+- **Read-only server**: no filesystem writes and no outbound network I/O from the MCP process for tool execution.
