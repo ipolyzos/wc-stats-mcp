@@ -30,3 +30,7 @@ Failures are mapped to stable categories (`InvalidArgument`, `NotFound`, `TooLar
 ## Read-only posture
 
 - The server must not write arbitrary files or open outbound network connections for tool execution; subprocess I/O is stdin/stdout/stderr only from the runner’s perspective.
+
+## File paths (tools that read the filesystem)
+
+Tools such as `count_lines_words_bytes` resolve user paths with **`internal/validate.ResolveUnderRoot`**: relative paths only, no `..` segments, symlink-safe containment under a configured root, regular files only, and a **25 MiB** default per-file size cap (`validate.DefaultMaxFileBytes`, overridable via `validate.Limits`).
